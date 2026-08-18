@@ -3,19 +3,15 @@
 import { useMemo, useState } from "react";
 import {
   Activity,
-  AlertTriangle,
-  ArrowUpRight,
-  BarChart3,
-  Bell,
+  ArrowRight,
   Check,
   CheckCircle2,
   ChevronDown,
   Circle,
-  Clock3,
+  ClipboardCheck,
   Command,
   Database,
   FileText,
-  Filter,
   Gauge,
   Inbox,
   LayoutDashboard,
@@ -36,112 +32,82 @@ import {
   Zap,
 } from "lucide-react";
 
-const stages = [
-  { number: "01", title: "Signal Discovery", count: "24", color: "violet", icon: Inbox },
-  { number: "02", title: "Verify & Identify", count: "18", color: "cyan", icon: ShieldCheck },
-  { number: "03", title: "Extract & Enrich", count: "12", color: "blue", icon: Database },
-  { number: "04", title: "Score & Qualify", count: "08", color: "amber", icon: Gauge },
-  { number: "05", title: "Outreach & Prepare", count: "05", color: "orange", icon: Send },
-  { number: "06", title: "Responses & Engage", count: "03", color: "pink", icon: Activity },
-  { number: "07", title: "Report & Optimize", count: "01", color: "purple", icon: BarChart3 },
+const workers = [
+  { name: "Hermes", role: "Orchestrator / COO", detail: "Routes work, retries, reports", icon: Network, tone: "cyan", status: "Routing" },
+  { name: "Prime", role: "Supervisor / QA Gate", detail: "Judges evidence and eligibility", icon: ShieldCheck, tone: "blue", status: "Gating" },
+  { name: "DeepSeek", role: "Execution Worker", detail: "Extracts, enriches, normalizes", icon: Database, tone: "amber", status: "Processing" },
+  { name: "Gemma", role: "Research & Verification", detail: "Challenges sources and confidence", icon: Search, tone: "violet", status: "Verifying" },
+  { name: "Nova", role: "Communications Worker", detail: "Personalizes and classifies replies", icon: Send, tone: "pink", status: "Ready" },
 ];
 
-const agents = [
-  { name: "Hermes", role: "Orchestrator", detail: "Plans, routes, monitors", icon: Network, color: "violet", status: "Listening" },
-  { name: "Prime Agent", role: "Quality Gate", detail: "Validates, scores, filters", icon: ShieldCheck, color: "cyan", status: "Executing" },
-  { name: "DeepSeek Flash", role: "Execution Engine", detail: "Extracts, enriches, drafts", icon: Zap, color: "blue", status: "Processing" },
+const pipeline = [
+  { id: "01", title: "Signal discovery", owner: "Gemma", count: "14", icon: Inbox, tone: "violet" },
+  { id: "02", title: "Signal verification", owner: "Gemma", count: "09", icon: ShieldCheck, tone: "cyan" },
+  { id: "03", title: "Contact extraction", owner: "DeepSeek", count: "07", icon: Database, tone: "amber" },
+  { id: "04", title: "Enrichment + validation", owner: "DeepSeek", count: "05", icon: Zap, tone: "orange" },
+  { id: "05", title: "Outreach prep", owner: "Nova", count: "03", icon: Send, tone: "pink" },
+  { id: "06", title: "Daily report", owner: "Hermes", count: "01", icon: FileText, tone: "blue" },
 ];
 
 const initialTasks = [
-  { title: "Review qualified leads from yesterday", owner: "Hermes", stage: "Score & Qualify", priority: "High", time: "09:15" },
-  { title: "Enrich Northstar account profile", owner: "DeepSeek Flash", stage: "Extract & Enrich", priority: "Medium", time: "10:30" },
-  { title: "Approve Q3 outreach sequence", owner: "You", stage: "Outreach & Prepare", priority: "Approval", time: "11:00" },
-  { title: "Summarize open conversations", owner: "Prime Agent", stage: "Responses & Engage", priority: "Low", time: "13:45" },
+  { title: "Retirement signal needs evidence review", meta: "Gemma · San Diego Unified · 0.78 confidence", tag: "REVIEW", tone: "review", time: "09:42" },
+  { title: "Approve 3 verified contacts for enrichment", meta: "Prime · Ryan Cahill Campaign", tag: "APPROVAL", tone: "approval", time: "10:15" },
+  { title: "Check Nova draft: pension transition message", meta: "Prime · Evidence-linked personalization", tag: "QA GATE", tone: "qa", time: "11:30" },
+  { title: "Investigate conflicting district source", meta: "Hermes · Escalated from Gemma", tag: "HUMAN", tone: "human", time: "14:00" },
 ];
 
-const colorClasses: Record<string, string> = {
-  violet: "agent-violet",
-  cyan: "agent-cyan",
-  blue: "agent-blue",
-  amber: "agent-amber",
-  orange: "agent-orange",
-  pink: "agent-pink",
-  purple: "agent-purple",
+const toneClasses: Record<string, string> = {
+  violet: "tone-violet",
+  cyan: "tone-cyan",
+  blue: "tone-blue",
+  amber: "tone-amber",
+  orange: "tone-orange",
+  pink: "tone-pink",
 };
 
 export default function Home() {
-  const [activeStage, setActiveStage] = useState("All activity");
+  const [activePipeline, setActivePipeline] = useState("Signal discovery");
   const [tasks, setTasks] = useState(initialTasks);
-  const [showComposer, setShowComposer] = useState(false);
   const [query, setQuery] = useState("");
   const [running, setRunning] = useState(false);
+  const [showComposer, setShowComposer] = useState(false);
 
-  const filteredTasks = useMemo(
-    () => tasks.filter((task) => `${task.title} ${task.owner} ${task.stage}`.toLowerCase().includes(query.toLowerCase())),
-    [tasks, query],
-  );
-
-  function completeTask(title: string) {
-    setTasks((current) => current.filter((task) => task.title !== title));
-  }
+  const filteredTasks = useMemo(() => tasks.filter((task) => `${task.title} ${task.meta}`.toLowerCase().includes(query.toLowerCase())), [tasks, query]);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto flex min-h-screen max-w-[1500px]">
         <aside className="hidden w-64 shrink-0 border-r border-border bg-sidebar px-4 py-5 lg:flex lg:flex-col">
-          <div className="mb-8 flex items-center gap-3 px-2">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground"><Command /></div>
-            <div><p className="font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground">Personal</p><p className="font-semibold tracking-tight">VBS OS</p></div>
-          </div>
-          <nav className="flex flex-col gap-1 text-sm">
-            <button className="nav-item nav-active"><LayoutDashboard /> Command Center</button>
-            <button className="nav-item"><Target /> Opportunities <span>24</span></button>
-            <button className="nav-item"><Users /> Contacts</button>
-            <button className="nav-item"><FileText /> Knowledge Base</button>
-            <button className="nav-item"><BarChart3 /> Performance</button>
-          </nav>
-          <div className="mt-auto flex flex-col gap-1 border-t border-border pt-4 text-sm">
-            <button className="nav-item"><Settings2 /> System Settings</button>
-            <div className="mt-5 flex items-center gap-3 rounded-xl bg-muted p-3"><div className="flex size-8 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary"><UserRound /></div><div className="min-w-0"><p className="truncate text-xs font-medium">Operator</p><p className="truncate text-[10px] text-muted-foreground">Online · 3 agents active</p></div><ChevronDown className="ml-auto text-muted-foreground" /></div>
-          </div>
+          <div className="mb-8 flex items-center gap-3 px-2"><div className="brand-mark"><Command /></div><div><p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">VBS OS</p><p className="font-semibold tracking-tight">Operator console</p></div></div>
+          <div className="campaign-chip mb-6"><span className="status-dot" /><div><p className="font-mono text-[9px] uppercase tracking-widest text-accent">Active campaign</p><p className="mt-1 text-sm font-semibold">Ryan Cahill</p><p className="text-[11px] text-muted-foreground">CA educator retirement signals</p></div></div>
+          <nav className="flex flex-col gap-1 text-sm"><button className="nav-item nav-active"><LayoutDashboard /> Command center</button><button className="nav-item"><Target /> Signal inbox <span>14</span></button><button className="nav-item"><Users /> Contacts</button><button className="nav-item"><ClipboardCheck /> QA decisions <span>05</span></button><button className="nav-item"><Activity /> Campaign activity</button></nav>
+          <div className="mt-auto flex flex-col gap-1 border-t border-border pt-4 text-sm"><button className="nav-item"><Settings2 /> System settings</button><div className="mt-5 flex items-center gap-3 rounded-xl bg-muted p-3"><div className="operator-avatar"><UserRound /></div><div className="min-w-0"><p className="truncate text-xs font-medium">Operator</p><p className="truncate text-[10px] text-muted-foreground">QEMU online · 5 workers</p></div><ChevronDown className="ml-auto text-muted-foreground" /></div></div>
         </aside>
 
         <section className="min-w-0 flex-1">
-          <header className="flex h-20 items-center justify-between border-b border-border px-5 sm:px-8">
-            <div className="flex items-center gap-3"><button className="icon-button lg:hidden"><Menu /></button><div><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary">Wednesday · August 19, 2026</p><h1 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">Good morning, operator.</h1></div></div>
-            <div className="flex items-center gap-2"><button className="icon-button"><Bell /><span className="notification-dot" /></button><button onClick={() => setShowComposer(true)} className="primary-button hidden sm:flex"><Plus /> New workflow</button><button className="icon-button"><MoreHorizontal /></button></div>
-          </header>
+          <header className="flex min-h-20 items-center justify-between gap-4 border-b border-border px-5 py-4 sm:px-8"><div className="flex items-center gap-3"><button className="icon-button lg:hidden"><Menu /></button><div><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">Wednesday · August 19, 2026 · 09:48 PST</p><h1 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">Ryan Cahill campaign command center</h1></div></div><div className="flex items-center gap-2"><span className="host-pill"><span className="status-dot" /> QEMU connected</span><button className="icon-button"><MoreHorizontal /></button><button onClick={() => setShowComposer(true)} className="primary-button hidden sm:flex"><Plus /> New campaign job</button></div></header>
 
           <div className="flex flex-col gap-6 p-5 sm:p-8">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <Metric label="Active signals" value="24" delta="+18.4%" icon={Activity} tone="violet" />
-              <Metric label="Qualified today" value="08" delta="+3 this week" icon={CheckCircle2} tone="cyan" />
-              <Metric label="Awaiting approval" value="05" delta="Needs you" icon={AlertTriangle} tone="amber" />
-              <Metric label="System efficiency" value="94.2%" delta="+2.1%" icon={Gauge} tone="blue" />
-            </div>
+            <section className="hero-panel"><div><div className="flex items-center gap-2"><span className="eyebrow">Pilot pod · ryan_cahill</span><span className="live-pill"><span /> LIVE</span></div><h2 className="mt-3 max-w-2xl text-2xl font-semibold tracking-tight text-balance sm:text-3xl">One signal-first workflow. Five workers. Only the decisions worth your attention.</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Hermes routes the work, Prime judges it, and the right worker handles each step. The pilot is tuned for publicly verifiable retirement and pension signals affecting California educators.</p><div className="mt-5 flex flex-wrap items-center gap-3"><button onClick={() => setRunning(!running)} className="primary-button">{running ? <><Circle className="fill-current" /> Pipeline running</> : <><Play /> Run morning discovery</>}</button><span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">6 daily jobs · evidence required</span></div></div><div className="hero-orbit" aria-hidden="true"><div className="orbit-ring ring-one" /><div className="orbit-ring ring-two" /><div className="orbit-core">R</div><span className="orbit-label label-hermes">HERMES</span><span className="orbit-label label-prime">PRIME</span><span className="orbit-label label-nova">NOVA</span></div></section>
 
-            <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><Sparkles className="text-primary" /><h2 className="text-lg font-semibold">Operating pipeline</h2><span className="live-pill"><span /> LIVE</span></div><p className="mt-1 text-sm text-muted-foreground">From raw signals to decisions that move your day forward.</p></div><button className="secondary-button" onClick={() => setRunning(!running)}>{running ? <><Circle className="fill-current" /> Running</> : <><Play /> Run pipeline</>}</button></div>
-              <div className="pipeline-grid">{stages.map((stage, index) => { const Icon = stage.icon; return <button key={stage.title} onClick={() => setActiveStage(stage.title)} className={`pipeline-stage ${activeStage === stage.title ? "pipeline-selected" : ""}`}><div className={`stage-icon ${colorClasses[stage.color]}`}><Icon /></div><div className="min-w-0 text-left"><p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{stage.number}</p><p className="mt-1 truncate text-xs font-semibold">{stage.title}</p></div><span className="stage-count">{stage.count}</span>{index < stages.length - 1 && <ArrowUpRight className="pipeline-arrow" />}</button> })}</div>
-              <div className="flow-status"><span className="flow-node violet-dot" /> Raw signals <ArrowUpRight /><span className="flow-node cyan-dot" /> Verified leads <ArrowUpRight /><span className="flow-node blue-dot" /> Enriched leads <ArrowUpRight /><span className="flow-node amber-dot" /> Qualified leads <ArrowUpRight /><span className="flow-node orange-dot" /> Outreach queue</div>
-            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Verified signals" value="09" delta="+4 since yesterday" icon={CheckCircle2} tone="cyan" /><Metric label="Awaiting Prime" value="05" delta="Needs a decision" icon={ShieldCheck} tone="blue" /><Metric label="Outreach ready" value="03" delta="Evidence-linked" icon={Send} tone="pink" /><Metric label="System confidence" value="86%" delta="+6.2% this week" icon={Gauge} tone="amber" /></div>
 
-            <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
-              <section className="rounded-2xl border border-border bg-card p-5 sm:p-6"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-semibold">Today&apos;s operating rhythm</h2><p className="text-sm text-muted-foreground">Your system is moving through the day with you.</p></div><button className="text-muted-foreground"><MoreHorizontal /></button></div><div className="flex flex-col gap-3">{["Morning · Discovery & Intelligence", "Midday · Enrichment & Qualification", "Afternoon · Outreach Preparation", "Evening · Responses & Engagement"].map((item, index) => <div key={item} className={`rhythm-row ${index === 0 ? "rhythm-active" : ""}`}><div className={`rhythm-time ${index === 3 ? "moon" : ""}`}>{index === 3 ? "NIGHTLY" : ["09:00", "12:00", "15:00"][index]}</div><div className="rhythm-line" /><div className="min-w-0 flex-1"><p className="text-sm font-medium">{item}</p><p className="mt-1 text-xs text-muted-foreground">{index === 0 ? "Hermes + PrimeSeek" : index === 1 ? "DeepSeek + Prime" : index === 2 ? "PrimeSeek + Hermes" : "Hermes + PrimeSeek"}</p></div><span className="hidden rounded-full bg-muted px-2 py-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground sm:block">{index === 0 ? "Active" : index === 3 ? "Scheduled" : "Complete"}</span></div>)}</div></section>
-              <section className="rounded-2xl border border-border bg-card p-5 sm:p-6"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-semibold">Agent fleet</h2><p className="text-sm text-muted-foreground">Three minds, one operating system.</p></div><button className="text-muted-foreground"><MoreHorizontal /></button></div><div className="flex flex-col gap-3">{agents.map((agent) => { const Icon = agent.icon; return <div key={agent.name} className="agent-row"><div className={`agent-avatar ${colorClasses[agent.color]}`}><Icon /></div><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="truncate text-sm font-semibold">{agent.name}</p><span className="online-dot" /></div><p className="truncate text-xs text-muted-foreground">{agent.role} · {agent.detail}</p></div><span className="font-mono text-[9px] uppercase tracking-widest text-primary">{agent.status}</span></div> })}</div><button className="secondary-button mt-5 w-full justify-center"><Settings2 /> Configure agents</button></section>
-            </div>
+            <section className="rounded-2xl border border-border bg-card p-5 sm:p-6"><div className="flex flex-wrap items-end justify-between gap-3"><div><div className="flex items-center gap-2"><Sparkles className="text-accent" /><h2 className="text-lg font-semibold">Ryan campaign pipeline</h2></div><p className="mt-1 text-sm text-muted-foreground">Every job carries client_id, evidence, confidence, Prime decision, and next action.</p></div><span className="contract-pill">CONTRACT · ryan_cahill</span></div><div className="pipeline-grid mt-5">{pipeline.map((step, index) => { const Icon = step.icon; return <button key={step.title} onClick={() => setActivePipeline(step.title)} className={`pipeline-stage ${activePipeline === step.title ? "pipeline-selected" : ""}`}><div className={`stage-icon ${toneClasses[step.tone]}`}><Icon /></div><p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{step.id} · {step.owner}</p><p className="text-xs font-semibold leading-4">{step.title}</p><span className="stage-count">{step.count}</span>{index < pipeline.length - 1 && <ArrowRight className="pipeline-arrow" />}</button>; })}</div><div className="flow-status"><span className="flow-node cyan-dot" /> discovered <ArrowRight /><span className="flow-node blue-dot" /> verified <ArrowRight /><span className="flow-node amber-dot" /> enriched <ArrowRight /><span className="flow-node pink-dot" /> outreach_ready <ArrowRight /><span className="flow-node violet-dot" /> human review only</div></section>
 
-            <section className="rounded-2xl border border-border bg-card p-5 sm:p-6"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><h2 className="text-lg font-semibold">Operator queue</h2><span className="count-badge">{tasks.length}</span></div><p className="text-sm text-muted-foreground">Your attention is the final quality gate.</p></div><div className="flex items-center gap-2"><div className="search-wrap"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search queue" /></div><button className="icon-button"><Filter /></button></div></div><div className="flex flex-col gap-2">{filteredTasks.map((task) => <div key={task.title} className="task-row"><button onClick={() => completeTask(task.title)} className="task-check" aria-label={`Complete ${task.title}`}><Check /></button><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{task.title}</p><p className="mt-1 truncate text-xs text-muted-foreground">{task.owner} · {task.stage}</p></div><span className={`priority priority-${task.priority.toLowerCase()}`}>{task.priority}</span><span className="hidden font-mono text-[10px] text-muted-foreground sm:block">{task.time}</span><button className="text-muted-foreground"><MoreHorizontal /></button></div>)}{filteredTasks.length === 0 && <div className="py-8 text-center text-sm text-muted-foreground">No tasks match your search.</div>}</div></section>
+            <div className="grid gap-6 xl:grid-cols-[1.25fr_0.9fr]"><section className="rounded-2xl border border-border bg-card p-5 sm:p-6"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-semibold">Master workflow</h2><p className="text-sm text-muted-foreground">The routing contract Hermes is running today.</p></div><span className="font-mono text-[10px] uppercase tracking-widest text-accent">6 jobs / daily</span></div><div className="workflow-list"><WorkflowRow number="01" title="Morning signal discovery" owner="Hermes → Gemma" status="Active" tone="active" /><WorkflowRow number="02" title="Verification + contact extraction" owner="Gemma → DeepSeek" status="Queued" tone="queued" /><WorkflowRow number="03" title="Enrichment + validation" owner="DeepSeek" status="Scheduled" tone="scheduled" /><WorkflowRow number="04" title="Qualification + outreach gate" owner="Prime" status="Awaiting" tone="awaiting" /><WorkflowRow number="05" title="Personalized outreach prep" owner="Nova → Prime" status="Blocked" tone="blocked" /><WorkflowRow number="06" title="End-of-day client report" owner="Hermes" status="Scheduled" tone="scheduled" /></div></section><section className="rounded-2xl border border-border bg-card p-5 sm:p-6"><div className="mb-5 flex items-center justify-between"><div><h2 className="text-lg font-semibold">Worker fleet</h2><p className="text-sm text-muted-foreground">Clear jobs. No model sprawl.</p></div><button className="icon-button"><MoreHorizontal /></button></div><div className="flex flex-col gap-2">{workers.map((worker) => { const Icon = worker.icon; return <div key={worker.name} className="agent-row"><div className={`agent-avatar ${toneClasses[worker.tone]}`}><Icon /></div><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="truncate text-sm font-semibold">{worker.name}</p><span className="online-dot" /></div><p className="truncate text-xs text-muted-foreground">{worker.role}</p><p className="truncate text-[10px] text-muted-foreground/70">{worker.detail}</p></div><span className="font-mono text-[9px] uppercase tracking-widest text-accent">{worker.status}</span></div>; })}</div></section></div>
 
-            <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5 text-xs text-muted-foreground"><div className="flex items-center gap-2"><span className="system-pulse" /> All systems nominal · Last sync 2 min ago</div><div className="flex gap-4"><button>Activity log</button><button>Help center</button><button>v1.0.4</button></div></footer>
+            <section className="rounded-2xl border border-border bg-card p-5 sm:p-6"><div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><h2 className="text-lg font-semibold">Operator queue</h2><span className="count-badge">{tasks.length}</span></div><p className="text-sm text-muted-foreground">Prime stops the pipeline when evidence, identity, or eligibility is uncertain.</p></div><div className="search-wrap"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search queue" aria-label="Search operator queue" /></div></div><div className="flex flex-col gap-2">{filteredTasks.map((task) => <div key={task.title} className="task-row"><button onClick={() => setTasks((current) => current.filter((item) => item.title !== task.title))} className="task-check" aria-label={`Complete ${task.title}`}><Check /></button><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{task.title}</p><p className="mt-1 truncate text-xs text-muted-foreground">{task.meta}</p></div><span className={`priority priority-${task.tone}`}>{task.tag}</span><span className="hidden font-mono text-[10px] text-muted-foreground sm:block">{task.time}</span><button className="text-muted-foreground"><MoreHorizontal /></button></div>)}{filteredTasks.length === 0 && <div className="py-8 text-center text-sm text-muted-foreground">No tasks match your search.</div>}</div></section>
+
+            <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5 text-xs text-muted-foreground"><div className="flex items-center gap-2"><span className="system-pulse" /> All systems nominal · Last sync 2 min ago</div><div className="flex gap-4"><button>Activity log</button><button>Campaign config</button><button>v1.1.0-pilot</button></div></footer>
           </div>
         </section>
       </div>
-      {showComposer && <div className="modal-backdrop" role="presentation" onClick={() => setShowComposer(false)}><div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="workflow-title" onClick={(event) => event.stopPropagation()}><div className="flex items-center justify-between"><div><p className="font-mono text-[10px] uppercase tracking-widest text-primary">New operation</p><h2 id="workflow-title" className="mt-1 text-xl font-semibold">Create a workflow</h2></div><button className="icon-button" onClick={() => setShowComposer(false)}><X /></button></div><label className="mt-6 flex flex-col gap-2 text-sm font-medium">What should the system handle?<textarea className="workflow-input" placeholder="e.g. Prepare my client follow-up queue for tomorrow" rows={4} /></label><div className="mt-5 flex justify-end gap-2"><button className="secondary-button" onClick={() => setShowComposer(false)}>Cancel</button><button className="primary-button" onClick={() => setShowComposer(false)}><Play /> Start workflow</button></div></div></div>}
+      {showComposer && <div className="modal-backdrop" role="presentation" onClick={() => setShowComposer(false)}><div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="job-title" onClick={(event) => event.stopPropagation()}><div className="flex items-center justify-between"><div><p className="font-mono text-[10px] uppercase tracking-widest text-accent">Ryan Cahill · new job</p><h2 id="job-title" className="mt-1 text-xl font-semibold">Create campaign job</h2></div><button className="icon-button" onClick={() => setShowComposer(false)}><X /></button></div><label className="mt-6 flex flex-col gap-2 text-sm font-medium">What should Hermes route?<textarea className="workflow-input" placeholder="e.g. Verify the latest district pension notice" rows={4} /></label><div className="mt-5 flex justify-end gap-2"><button className="secondary-button" onClick={() => setShowComposer(false)}>Cancel</button><button className="primary-button" onClick={() => setShowComposer(false)}><Play /> Queue job</button></div></div></div>}
     </main>
   );
 }
 
-function Metric({ label, value, delta, icon: Icon, tone }: { label: string; value: string; delta: string; icon: typeof Activity; tone: string }) {
-  return <div className="metric-card"><div className={`metric-icon ${colorClasses[tone]}`}><Icon /></div><div className="min-w-0"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p><p className="mt-1 font-mono text-[9px] uppercase tracking-widest text-primary">{delta}</p></div><ArrowUpRight className="ml-auto text-muted-foreground" /> </div>;
-}
+function Metric({ label, value, delta, icon: Icon, tone }: { label: string; value: string; delta: string; icon: typeof Activity; tone: string }) { return <div className="metric-card"><div className={`metric-icon ${toneClasses[tone]}`}><Icon /></div><div className="min-w-0"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p><p className="mt-1 font-mono text-[9px] uppercase tracking-widest text-accent">{delta}</p></div></div>; }
+
+function WorkflowRow({ number, title, owner, status, tone }: { number: string; title: string; owner: string; status: string; tone: string }) { return <div className="workflow-row"><span className="workflow-number">{number}</span><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{title}</p><p className="mt-1 text-xs text-muted-foreground">{owner}</p></div><span className={`workflow-status status-${tone}`}><span />{status}</span></div>; }
+
