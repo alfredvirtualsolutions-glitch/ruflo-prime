@@ -1,0 +1,111 @@
+                         JUAN CABEZAS OS
+                               │
+                         YOU / COMMAND
+                               │
+          ┌────────────┬───────┼───────┬────────────┐
+          ▼            ▼       ▼       ▼            ▼
+       HERMES        GEMMA   DEEPSEEK  PRIME       NOVA
+     Orchestrator   Research  Execution  QA        Comms
+          │            │       │       │            │
+          └────────────┴───────┼───────┴────────────┘
+                               │
+                         SHARED STATE
+                               │
+                    RESULTS / LOGS / QUEUES
+                               │
+                    ALL AGENTS REPORT TO YOU
+
+
+ 
+
+
+1. Hermes — Operations Commander
+Hermes wakes the system up, checks pending work and decides what needs to happen next.
+It should:
+CHECK SYSTEM
+→ check queues
+→ check unfinished jobs
+→ check failures
+→ check scheduled tasks
+→ assign work
+→ monitor workers
+→ retry recoverable failures
+→ escalate serious failures
+→ consolidate results
+→ report to you.
+Hermes should know what needs doing, not necessarily perform it.
+2. Gemma — Intelligence Worker
+Gemma handles research-heavy work.
+INPUT
+→ investigate
+→ compare sources
+→ identify supporting evidence
+→ identify contradictions
+→ summarize findings
+→ attach sources
+→ assign confidence
+→ send structured result.
+Gemma reports:
+Finding / Evidence / Confidence / Problems / Recommendation
+If confidence is weak, it doesn't pretend otherwise.
+3. DeepSeek — Production Engine
+This is your volume worker.
+Give DeepSeek repetitive work such as:
+RAW DATA
+→ parse
+→ extract
+→ clean
+→ normalize
+→ classify
+→ deduplicate
+→ transform
+→ database-ready output.
+Example:
+Gemma gives the system 40 useful pages.
+Don't waste Gemma processing 2,000 rows.
+Hermes sends those pages to DeepSeek, which converts them into structured records.
+4. Prime — Control Tower
+Prime should be deliberately difficult to satisfy.
+Prime receives outputs and asks:
+Is it supported?
+Is it complete?
+Does the evidence match?
+Are fields missing?
+Did another model invent anything?
+Is confidence sufficient?
+Can the workflow safely continue?
+
+Prime returns only:
+APPROVED
+REJECTED
+REWORK
+HUMAN_REVIEW
+
+For REWORK, Prime must explain exactly what failed.
+Hermes then routes it back to the appropriate worker.
+5. Nova — Communication Intelligence
+Nova owns language and conversations.
+Nova handles:
+APPROVED DATA
+→ personalization
+→ message preparation
+→ follow-ups
+→ response analysis
+→ intent classification
+→ objection classification
+→ appointment-intent detection
+→ recommended response.
+Nova should never invent missing research.
+If Nova needs information that isn't present:
+MISSING_CONTEXT
+Hermes sends the request back to Gemma/DeepSeek instead of allowing Nova to fill in the blanks.
+
+The complete  operational loop
+
+START
+  ↓
+HERMES
+Check system + determine jobs
+  ↓
+GEMMA
+Research / investigate

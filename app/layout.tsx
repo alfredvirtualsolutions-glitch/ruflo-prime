@@ -13,15 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VBS OS | Command Center",
-  description: "A personal operating system for turning signals into focused action.",
+  title: "Ryan Cahill Campaign | VBS OS",
+  description: "Signal-first campaign command center for the Ryan Cahill pilot pod.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full bg-background antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
