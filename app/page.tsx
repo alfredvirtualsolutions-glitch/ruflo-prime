@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   Activity,
@@ -81,7 +82,7 @@ export default function Home() {
         <aside className="hidden w-64 shrink-0 border-r border-border bg-sidebar px-4 py-5 lg:flex lg:flex-col">
           <div className="mb-8 flex items-center gap-3 px-2"><div className="brand-mark"><Command /></div><div><p className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">VBS OS</p><p className="font-semibold tracking-tight">Operator console</p></div></div>
           <div className="campaign-chip mb-6"><span className="status-dot" /><div><p className="font-mono text-[9px] uppercase tracking-widest text-accent">Active campaign</p><p className="mt-1 text-sm font-semibold">Ryan Cahill</p><p className="text-[11px] text-muted-foreground">CA educator retirement signals</p></div></div>
-          <nav className="flex flex-col gap-1 text-sm"><button className="nav-item nav-active"><LayoutDashboard /> Command center</button><button className="nav-item"><Target /> Signal inbox <span>14</span></button><button className="nav-item"><Users /> Contacts</button><button className="nav-item"><ClipboardCheck /> QA decisions <span>05</span></button><button className="nav-item"><Activity /> Campaign activity</button></nav>
+          <nav className="flex flex-col gap-1 text-sm"><button className="nav-item nav-active"><LayoutDashboard /> Command center</button><Link href="/pension" className="nav-item"><Target /> Pension signals</Link><button className="nav-item"><Users /> Contacts</button><button className="nav-item"><ClipboardCheck /> QA decisions <span>05</span></button><button className="nav-item"><Activity /> Campaign activity</button></nav>
           <div className="mt-auto flex flex-col gap-1 border-t border-border pt-4 text-sm"><button className="nav-item"><Settings2 /> System settings</button><div className="mt-5 flex items-center gap-3 rounded-xl bg-muted p-3"><div className="operator-avatar"><UserRound /></div><div className="min-w-0"><p className="truncate text-xs font-medium">Operator</p><p className="truncate text-[10px] text-muted-foreground">QEMU online · 5 workers</p></div><ChevronDown className="ml-auto text-muted-foreground" /></div></div>
         </aside>
 
